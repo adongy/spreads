@@ -20,7 +20,6 @@ from __future__ import division
 import copy
 import logging
 import shutil
-import os
 
 import blinker
 import requests
