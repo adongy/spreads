@@ -20,6 +20,7 @@ from __future__ import division
 import copy
 import logging
 import shutil
+import os
 
 import blinker
 import requests
@@ -41,6 +42,7 @@ signals = blinker.Namespace()
 on_transfer_started = signals.signal('transfer:started')
 on_transfer_progressed = signals.signal('transfer:progressed')
 on_transfer_completed = signals.signal('transfer:completed')
+on_transfer_error = signals.signal('transfer:error')
 on_submit_started = signals.signal('submit:started')
 on_submit_progressed = signals.signal('submit:progressed')
 on_submit_completed = signals.signal('submit:completed')
@@ -69,6 +71,11 @@ def transfer_to_stick(wf_id, base_path):
         if target_path.exists():
             shutil.rmtree(unicode(target_path))
         target_path.mkdir()
+        if not target_path.exists():
+            signals['transfer:error'].send(
+                workflow, message=('Directory is not writable, '
+                    'test for correct filesystem/permissions'))
+            return
         signals['transfer:started'].send(workflow)
         for num, path in enumerate(files, 1):
             signals['transfer:progressed'].send(
